@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1510785944926.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2186663250",
+    "id" : "A16E7E4B",
+    "lastKnownWriteTime" : 1510785908,
+    "last_content_update" : 1510785908,
+    "path" : "~/Documents/data science R/p8105_shinyhw6_problem2/nyc_shiny.Rmd",
+    "project_path" : "nyc_shiny.Rmd",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
