@@ -21,8 +21,6 @@ library(shiny)
 ```
 
 ```{r import_data}
-set.seed(1)
-
 nyc_inspections = read_csv("./DOHMH_New_York_City_Restaurant_Inspection_Results.csv.gz", 
                            col_types = cols(building = col_character()),
                            na = c("NA", "N/A")) %>% 
@@ -30,15 +28,19 @@ nyc_inspections = read_csv("./DOHMH_New_York_City_Restaurant_Inspection_Results.
   mutate(inspection_num = row_number(),   
          boro = str_to_title(boro)) %>% 
   select(inspection_num, boro, grade, score, critical_flag, dba, cuisine_description, zipcode, violation_description)
+
+# take 20000 random sample
+set.seed(123)
+nyc_subdata = nyc_inspections[sample(nrow(nyc_inspections), 20000), ]
 ```
 
 Column {.sidebar}
 -----------------------------------------------------------------------
-This `flexdashboard` with Shiny was made to explore the restaurant scores and cuisines type comparison among the NYC Restaurants. The data come from New York City Department of Health and Mental Hygiene (DOHMH), which include information of restaurant name and location, type of food, inspection date, and details on violation codes, total scores, and associated grades. Download the data used for this app [here](http://jeffgoldsmith.com/DSI/dataset_restaurant_inspections.html).
+This `flexdashboard` with Shiny was made to explore the restaurant scores and cuisines type comparison among the NYC Restaurants. The data come from New York City Department of Health and Mental Hygiene (DOHMH), which provides information of restaurant in NYC.There are 188,199 entries, we've randomly taken 20000 sample from it.Download the data used for this app [here](http://jeffgoldsmith.com/DSI/dataset_restaurant_inspections.html).
 
 
 ```{r}
-boros = nyc_inspections %>% distinct(boro) %>% pull()
+boros = nyc_subdata %>% distinct(boro) %>% pull()
 
 # select Input widget
   selectInput("boro_choice", label = h3("Select boro"),
@@ -48,10 +50,10 @@ hr()
 
 # slider Input widter
 renderUI({
-  max_score = nyc_inspections %>% filter(boro == input$boro_choice) %>% 
+  max_score = nyc_subdata %>% filter(boro == input$boro_choice) %>% 
                            distinct(score) %>% max()
   
-  min_score = nyc_inspections %>% filter(boro == input$boro_choice) %>% 
+  min_score = nyc_subdata %>% filter(boro == input$boro_choice) %>% 
                            distinct(score) %>% min()
   
   sliderInput("score_range", label = h3("Choose score range"), min = min_score, 
@@ -62,7 +64,7 @@ renderUI({
 
 hr()
 
-grade_choice = nyc_inspections %>% distinct(grade) %>% pull()
+grade_choice = nyc_subdata %>% distinct(grade) %>% pull()
 
 # radioButtons widget
 radioButtons("grade_choice", label = h3("Choose Grade type"),
@@ -78,7 +80,7 @@ Row
 
 ```{r}
 renderPlotly({
-  nyc_inspections %>%
+  nyc_subdata %>%
   filter(boro == input$boro_choice, 
            score %in% input$score_range[1]:input$score_range[2],
            grade == input$grade_choice) %>%
@@ -98,7 +100,7 @@ Row {.tabset .tabset-fade }
 
 ```{r}
 renderPlotly({
-  nyc_inspections %>% 
+  nyc_subdata %>% 
   filter(boro == input$boro_choice, 
            score %in% input$score_range[1]:input$score_range[2],
            grade == input$grade_choice) %>%
@@ -118,7 +120,7 @@ renderPlotly({
 ```{r}
 renderPlotly({
   common_cuisine =
-  nyc_inspections %>% 
+  nyc_subdata %>% 
     filter(boro == input$boro_choice, 
            score %in% input$score_range[1]:input$score_range[2],
            grade == input$grade_choice) %>%
@@ -126,7 +128,7 @@ renderPlotly({
   top_n(10) %>% 
   select(cuisine_description)
 
-nyc_inspections %>% 
+nyc_subdata %>% 
 filter(boro == input$boro_choice, 
            score %in% input$score_range[1]:input$score_range[2],
            grade == input$grade_choice) %>%
