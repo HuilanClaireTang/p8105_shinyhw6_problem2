@@ -5,13 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "2186663250",
+    "hash" : "1895491815",
     "id" : "A16E7E4B",
-    "lastKnownWriteTime" : 1510785908,
-    "last_content_update" : 1510785908,
+    "lastKnownWriteTime" : 1510881086,
+    "last_content_update" : 1510881086315,
     "path" : "~/Documents/data science R/p8105_shinyhw6_problem2/nyc_shiny.Rmd",
     "project_path" : "nyc_shiny.Rmd",
     "properties" : {
+        "cursorPosition" : "142,56",
+        "scrollLine" : "128"
     },
     "relative_order" : 1,
     "source_on_save" : false,
