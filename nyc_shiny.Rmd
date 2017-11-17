@@ -85,7 +85,7 @@ renderPlotly({
   mutate(text_label = str_c("Score: ", score, '\ngrade: ', grade)) %>% 
   filter(boro == input$boro_choice) %>%
   plot_ly(x = ~zipcode, y = ~score, type = "scatter", mode = "markers",
-          alpha = 0.5, 
+          alpha = 0.5,
           color = ~score,
           text = ~text_label) 
 })
