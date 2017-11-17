@@ -27,7 +27,9 @@ nyc_inspections = read_csv("./DOHMH_New_York_City_Restaurant_Inspection_Results.
   filter(grade %in% c("A", "B", "C")) %>% 
   mutate(inspection_num = row_number(),   
          boro = str_to_title(boro)) %>% 
-  select(inspection_num, boro, grade, score, critical_flag, dba, cuisine_description, zipcode, violation_description)
+  select(inspection_num, boro, grade, score, critical_flag, dba, cuisine_description, zipcode, violation_description) %>%
+  filter(!is.na(score)) 
+
 
 # take 20000 random sample
 set.seed(123)
@@ -36,19 +38,19 @@ nyc_subdata = nyc_inspections[sample(nrow(nyc_inspections), 20000), ]
 
 Column {.sidebar}
 -----------------------------------------------------------------------
-This `flexdashboard` with Shiny was made to explore the restaurant scores and cuisines type comparison among the NYC Restaurants. The data come from New York City Department of Health and Mental Hygiene (DOHMH), which provides information of restaurant in NYC.There are 188,199 entries, we've randomly taken 20000 sample from it.Download the data used for this [here](http://jeffgoldsmith.com/DSI/dataset_restaurant_inspections.html).
+This `flexdashboard` with Shiny was made to explore the relationship between restaurant inspection scores and cuisine types in NYC.  The data comes from the New York City Department of Health and Mental Hygiene (DOHMH); there were 188,199 viable entries and we have randomly selected 10% of this population for analysis (20,000 total). Restaurant cumulative scores are converted into grades based on the following: a public health hazard, a critical violation, and/or a general violation. Lower scores earn a higher grade. The data used for this can be found  [here](http://jeffgoldsmith.com/DSI/dataset_restaurant_inspections.html). 
 
 
 ```{r}
 boros = nyc_subdata %>% distinct(boro) %>% pull()
 
-# select Input widget
+# selectInput widget
   selectInput("boro_choice", label = h3("Select boro"),
             choices = boros, selected = "Manhattan")
 
 hr()
 
-# slider Input widter
+# sliderInput widter
 renderUI({
   max_score = nyc_subdata %>% filter(boro == input$boro_choice) %>% 
                            distinct(score) %>% max()
@@ -57,10 +59,10 @@ renderUI({
                            distinct(score) %>% min()
   
   sliderInput("score_range", label = h3("Choose score range"), min = min_score, 
-        max = max_score, value = c(5, 80))
+        max = max_score, value = c(-1, 86))
 })  
 
-  # value: default value range when it shows up
+# value: default value range when it shows up
 
 hr()
 
@@ -76,7 +78,7 @@ radioButtons("grade_choice", label = h3("Choose Grade type"),
 Row 
 -----------------------------------------------------------------------
 
-### NYC Restaurant Scores by Zip Code
+###Scatterplot: Restaurant Inspection Scores by Zipcode
 
 ```{r}
 renderPlotly({
@@ -89,14 +91,19 @@ renderPlotly({
   plot_ly(x = ~zipcode, y = ~score, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~score,
-          text = ~text_label) 
+          text = ~text_label) %>%
+  layout(legend = list(x = 100, y = 0.5)) %>%
+  layout(
+    title = "Restaurant Score by Zipcode") %>%
+    layout(yaxis = list(title = 'Restaurant Score')) %>%
+    layout(xaxis = list(title = 'Zipcode'))
 })
 ```
 
 Row {.tabset .tabset-fade } 
 -----------------------------------------------------------------------
 
-### Bar chart for Most 5 common Cuisines
+### Most Common Cuisines in NYC (Bar Chart)
 
 ```{r}
 renderPlotly({
@@ -106,17 +113,17 @@ renderPlotly({
            grade == input$grade_choice) %>%
   count(cuisine_description) %>% 
   mutate(cuisine_description = fct_reorder(cuisine_description, n)) %>% 
-  top_n(5) %>%
+  top_n(10) %>%
   plot_ly(x = ~cuisine_description, y = ~n, color = ~cuisine_description, type = "bar", colors = "Set2") %>%
   layout(legend = list(x = 100, y = 0.5)) %>%
   layout(
-    title = "Top 5 common Cuisine Types") %>%
+    title = "Most Common Cuisines in NYC") %>%
     layout(yaxis = list(title = 'Number of Restaurants')) %>%
     layout(xaxis = list(title = 'Cuisine Type'))
 })
 ```
 
-### Boxplot of the restaurant score for Five Selected Cusine types
+### Boxplot of the Restaurant's Inspection Score for the top five most popular cuisines in NYC
 
 ```{r}
 renderPlotly({
@@ -140,8 +147,8 @@ inner_join(., common_cuisine,
           colors = "Set2") %>%
    layout(legend = list(x = 100, y = 0.5)) %>%
     layout(
-    title = "Restaurant Score for Five Selected Cusine Types") %>%
+    title = "Distribution of restaurant score in the most popular cuisines in NYC") %>%
     layout(yaxis = list(title = 'Restaurant Score')) %>%
-    layout(xaxis = list(title = 'Cusine Type'))
+    layout(xaxis = list(title = 'Cuisine Type'))
 })
 ```
